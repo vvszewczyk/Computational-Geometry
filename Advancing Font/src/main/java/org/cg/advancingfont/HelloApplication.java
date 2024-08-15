@@ -15,13 +15,13 @@ import java.util.*;
 
 public class HelloApplication extends Application
 {
+    // Przed uruchomieniem upewnić się, że ścieżki do siatek są podane prawidłowo
     @Override
     public void start(Stage stage) throws IOException
     {
         Pane root = new Pane();
         Scene scene = new Scene(root, 800, 600);
         stage.setResizable(false);
-
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter mesh to draw: ");
@@ -34,10 +34,11 @@ public class HelloApplication extends Application
         System.out.println("Enter the number of max triangles");
         int maxTriangles = scanner.nextInt();
 
+
         switch(mesh)
         {
             case 1:
-                String path1 = "C:\\Users\\wojte\\source\\reposJava\\Geometria obliczeniowa\\AdvancingFont\\src\\main\\resources\\org\\cg\\advancingfont\\latwy_wariant.txt";
+                String path1 = "D:\\Github\\Computational-Geometry-s\\Advancing Font\\src\\main\\resources\\org\\cg\\advancingfont\\latwy_wariant.txt";
                 try
                 {
                     drawMesh(root, path1, density, maxTriangles, mesh);
@@ -48,7 +49,7 @@ public class HelloApplication extends Application
                 }
                 break;
             case 2:
-                String path2 = "C:\\Users\\wojte\\source\\reposJava\\Geometria obliczeniowa\\AdvancingFont\\src\\main\\resources\\org\\cg\\advancingfont\\trudny_wariant.txt";
+                String path2 = "D:\\Github\\Computational-Geometry-s\\Advancing Font\\src\\main\\resources\\org\\cg\\advancingfont\\trudny_wariant.txt";
                 try
                 {
                     drawMesh(root, path2, density, maxTriangles, mesh);
@@ -59,7 +60,7 @@ public class HelloApplication extends Application
                 }
                 break;
             case 3:
-                String path3 = "C:\\Users\\wojte\\source\\reposJava\\Geometria obliczeniowa\\AdvancingFont\\src\\main\\resources\\org\\cg\\advancingfont\\circle.txt";
+                String path3 = "D:\\Github\\Computational-Geometry-s\\Advancing Font\\src\\main\\resources\\org\\cg\\advancingfont\\circle.txt";
                 try
                 {
                     drawMesh(root, path3, density, maxTriangles, mesh);
@@ -70,11 +71,12 @@ public class HelloApplication extends Application
                 }
         }
 
-        stage.setTitle("GO - LAB_06");
+        stage.setTitle("GO - Advancing Font");
         stage.setScene(scene);
         stage.show();
     }
 
+    // Przeskalowanie punktów z pliku względem okienka
     public static void translatePoints(List<MyPoint> points, double dx, double dy)
     {
         for (MyPoint point : points)
@@ -84,7 +86,7 @@ public class HelloApplication extends Application
         }
     }
 
-    // selectedEdge(front): Wybieranie krawędzi z listy
+    // Wybieranie krawędzi z listy
     public MyLine selectedEdge(List<MyPoint> front)
     {
         if (front.size() < 2)
@@ -96,7 +98,7 @@ public class HelloApplication extends Application
         return new MyLine(front.get(0), front.get(1));
     }
 
-    // findC(edge): Znajdowanie punktu C dla trójkąta równobocznego
+    // Znajdowanie punktu (wierzchołka) C dla trójkąta równobocznego
     public MyPoint findC(MyLine edge)
     {
         double a = edge.calcDistance();
@@ -114,7 +116,7 @@ public class HelloApplication extends Application
     }
 
 
-    // findPointInNeighborhood(point, radius): Sprawdzenie sąsiedztwa punktu C
+    // Sprawdzenie sąsiedztwa punktu C
     public MyPoint findPointInNeighborhood(MyPoint C, double radius, List<MyPoint> allPoints)
     {
         for (MyPoint point : allPoints)
@@ -129,18 +131,18 @@ public class HelloApplication extends Application
     }
 
 
-    // updateFront(front, edge, triangle): Aktualizowanie frontu
+    // Aktualizowanie frontu
     public void updateFront(List<MyPoint> front, MyLine edge, MyTriangle triangle)
     {
         front.remove(edge.start);
 
         if (!front.contains(triangle.w3))
         {
-            front.add(triangle.w3); //dla zachowania kolejności
+            front.add(triangle.w3); // Dla zachowania kolejności
         }
     }
 
-
+// Rysowanie siatki, główna pętla programu
     public void drawMesh(Pane root, String path, int density, int maxTriangles, int mesh) throws IOException
     {
         List<MyPoint> points = readData(path, density);
@@ -231,6 +233,7 @@ public class HelloApplication extends Application
     }
 
 
+    // Odczytanie współrzędnych siatki wejściowej z pliku
     public List<MyPoint> readData(String filename, int pointsToRead) throws FileNotFoundException
     {
         List<MyPoint> points = new ArrayList<>();
@@ -262,6 +265,7 @@ public class HelloApplication extends Application
         return points;
     }
 
+    // Zapisanie utworzonej (wyjściowej) siatki do pliku txt
     public void saveData(List<MyTriangle> triangles, String filename)
     {
         Set<MyPoint> uniquePoints = new HashSet<>();

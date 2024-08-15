@@ -13,7 +13,8 @@ public class MyPoint
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("Punkt (%.2f, %.2f)", x, y);
     }
 
@@ -26,11 +27,13 @@ public class MyPoint
         return this.y;
     }
 
-    public void setX(double x) {
+    public void setX(double x)
+    {
         this.x = x;
     }
 
-    public void setY(double y) {
+    public void setY(double y)
+    {
         this.y = y;
     }
 

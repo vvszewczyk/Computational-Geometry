@@ -13,6 +13,7 @@ public class MyLine
 
     public double calcDistance()
     {
+        // poniżej funkcja z klasy MyPoint
         return start.calcDistance(end);
     }
 

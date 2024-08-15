@@ -34,40 +34,38 @@ public class MyTriangle
     }
 
 
-    private boolean linesIntersect(MyPoint a, MyPoint b, MyPoint c, MyPoint d) {
-        //Implementacja testu przecięcia dwóch odcinków oparta na algorytmie wyznaczania położenia względnego dwóch odcinków
+    private boolean linesIntersect(MyPoint a, MyPoint b, MyPoint c, MyPoint d)
+    {
+        // Implementacja testu przecięcia dwóch odcinków, oparta na algorytmie wyznaczania położenia względnego dwóch odcinków
         double d1 = direction(c, d, a);
         double d2 = direction(c, d, b);
         double d3 = direction(a, b, c);
         double d4 = direction(a, b, d);
 
-        if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
-                ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0)))
+        if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0)))
         {
             return true;
         }
-        return (d1 == 0 && onSegment(c, d, a)) ||
-                (d2 == 0 && onSegment(c, d, b)) ||
-                (d3 == 0 && onSegment(a, b, c)) ||
-                (d4 == 0 && onSegment(a, b, d));
+
+        return (d1 == 0 && onSegment(c, d, a)) || (d2 == 0 && onSegment(c, d, b)) || (d3 == 0 && onSegment(a, b, c)) || (d4 == 0 && onSegment(a, b, d));
     }
 
     private double direction(MyPoint pi, MyPoint pj, MyPoint pk)
     {
-        //iloczyn wektorowy (pk-pi) x (pj-pi)
+        // Iloczyn wektorowy (pk-pi) x (pj-pi)
         return (pk.x - pi.x) * (pj.y - pi.y) - (pk.y - pi.y) * (pj.x - pi.x);
     }
 
-    private boolean onSegment(MyPoint pi, MyPoint pj, MyPoint pk) {
-        //z wyjątkiem wierzchołków
-        return pk != pi && pk != pj &&
-                Math.min(pi.x, pj.x) < pk.x && pk.x < Math.max(pi.x, pj.x) &&
-                Math.min(pi.y, pj.y) < pk.y && pk.y < Math.max(pi.y, pj.y);
+    private boolean onSegment(MyPoint pi, MyPoint pj, MyPoint pk)
+    {
+        // z wyjątkiem wierzchołków
+        return pk != pi && pk != pj && Math.min(pi.x, pj.x) < pk.x && pk.x < Math.max(pi.x, pj.x) && Math.min(pi.y, pj.y) < pk.y && pk.y < Math.max(pi.y, pj.y);
     }
 
 
-    public boolean intersects(MyTriangle other) {
-        //sprawdzanie przecięcie dla każdej krawędzi jednego trójkąta z każdą krawędzią drugiego trójkąta
+    public boolean intersects(MyTriangle other)
+    {
+        // Sprawdzanie przecięcie dla każdej krawędzi jednego trójkąta z każdą krawędzią drugiego trójkąta
         return linesIntersect(this.w1, this.w2, other.w1, other.w2) ||
                 linesIntersect(this.w1, this.w2, other.w2, other.w3) ||
                 linesIntersect(this.w1, this.w2, other.w3, other.w1) ||
