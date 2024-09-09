@@ -261,7 +261,7 @@ public class HelloApplication extends Application
         }
 
         scanner.close();
-        System.out.println("Wczytano " + points.size() + " punktów.");
+        System.out.println("Points read: " + points.size());
         return points;
     }
 
