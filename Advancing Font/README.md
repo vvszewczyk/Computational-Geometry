@@ -10,5 +10,6 @@ Poniżej przedstawiono wynik działania obecnej wersji programu dla 3 zestawów 
   <img src="images/alien1.png" alt="a1">
   <img src="images/alien 2.png" alt="a2">
   <img src="images/circle1.png" alt="c1">
+  <br> Czerwony element jest ostatnim wygenerowanym elementem (do debugowania).
   <img src="images/circle2.png" alt="c2">
 </p>
