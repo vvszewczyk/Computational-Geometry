@@ -2,7 +2,7 @@
   <img src="images/exercise.png" alt="ex">
 </p>
 
-Poniżej przedstawiono wynik działania obecnej wersji programu dla 3 zestawów punktów w różnych konfiguracjach (zagęszczenie, ilość wygenerowanych elementów). Program jest w trakcie budowy i nie został skończony.
+Poniżej przedstawiono wynik działania obecnej wersji programu dla 3 zestawów punktów w różnych konfiguracjach (zagęszczenie, ilość wygenerowanych elementów). Program jest w trakcie budowy i nie został ukończony.
 
 <p align="center">
   <img src="images/ghost1.png" alt="g1">
