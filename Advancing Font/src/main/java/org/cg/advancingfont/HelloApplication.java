@@ -1,11 +1,15 @@
 package org.cg.advancingfont;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -99,22 +103,26 @@ public class HelloApplication extends Application
     }
 
     // Znajdowanie punktu (wierzchołka) C dla trójkąta równobocznego
-    public MyPoint findC(MyLine edge)
+    public List<MyPoint> findC(MyLine edge)
     {
+        List<MyPoint> candidates = new ArrayList<>();
         double a = edge.calcDistance();
-        double height = (a*Math.sqrt(3))/2;
+        double height = (a * Math.sqrt(3)) / 2;
 
         MyPoint normal = new MyPoint(edge.end.getY() - edge.start.getY(), -(edge.end.getX() - edge.start.getX()));
-
         double length = Math.sqrt(normal.x * normal.x + normal.y * normal.y);
         normal.x /= length;
         normal.y /= length;
 
         MyPoint midpoint = new MyPoint((edge.start.getX() + edge.end.getX()) / 2, (edge.start.getY() + edge.end.getY()) / 2);
 
-        return new MyPoint(midpoint.x + normal.x * height, midpoint.y + normal.y * height);
-    }
+        MyPoint candidate1 = new MyPoint(midpoint.x + normal.x * height, midpoint.y + normal.y * height);
+        MyPoint candidate2 = new MyPoint(midpoint.x - normal.x * height, midpoint.y - normal.y * height);
 
+        candidates.add(candidate1);
+        candidates.add(candidate2);
+        return candidates;
+    }
 
     // Sprawdzenie sąsiedztwa punktu C
     public MyPoint findPointInNeighborhood(MyPoint C, double radius, List<MyPoint> allPoints)
@@ -130,7 +138,6 @@ public class HelloApplication extends Application
         return null;
     }
 
-
     // Aktualizowanie frontu
     public void updateFront(List<MyPoint> front, MyLine edge, MyTriangle triangle)
     {
@@ -143,95 +150,140 @@ public class HelloApplication extends Application
     }
 
 // Rysowanie siatki, główna pętla programu
-    public void drawMesh(Pane root, String path, int density, int maxTriangles, int mesh) throws IOException
+public void drawMesh(Pane root, String path, int density, int maxTriangles, int mesh) throws IOException
+{
+    List<MyPoint> points = readData(path, density);
+
+    if(mesh == 2) // Dla kosmity
     {
-        List<MyPoint> points = readData(path, density);
+        translatePoints(points, -70, -250);
+    }
 
-        if(mesh == 2)
+    // Obwód wzorca
+    for (int i = 0; i < points.size(); i++)
+    {
+        MyPoint p1 = points.get(i);
+        MyPoint p2 = points.get((i + 1) % points.size());
+        Line line = new Line(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+        line.setStroke(Color.BLUE);
+        root.getChildren().add(line);
+    }
+
+    int trianglesDrawn = 0;
+    List<MyTriangle> existingTriangles = new ArrayList<>();
+    List<MyPoint> front = new ArrayList<>(points);
+
+    // Lista do przechowywania utworzonych trójkątów – do animacji
+    List<MyTriangle> trianglesToAnimate = new ArrayList<>();
+
+    // Zmienna przechowująca pierwszy punkt bieżącego rzędu
+    MyPoint rowStart = null;
+
+    while (front.size() > 1 && trianglesDrawn < maxTriangles)
+    {
+        MyLine edge = selectedEdge(front);
+        MyPoint finalPoint = null;
+
+        // Jeśli rowStart nie został jeszcze ustawiony, a krawędź dotyczy pierwszego punktu frontu, ustaw go.
+        if (rowStart == null && (edge.start.equals(front.get(0)) || edge.end.equals(front.get(0))))
         {
-            translatePoints(points, -70, -250);
+            rowStart = front.get(0);
         }
 
-        for (int i = 0; i < points.size(); i++)
+        // Jeśli front wskazuje, że kończy się bieżący rząd (np. front.size() == 2)
+        // i rowStart jest już ustawiony – wymuś użycie rowStart jako finalPoint.
+        if (front.size() == 2 && rowStart != null
+                && !rowStart.equals(edge.start) && !rowStart.equals(edge.end))
         {
-            MyPoint p1 = points.get(i);
-            MyPoint p2 = points.get((i + 1) % points.size());
-            Line line = new Line(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-            line.setStroke(Color.BLUE);
-            root.getChildren().add(line);
-        }
-
-        int trianglesDrawn = 0;
-        List<MyTriangle> existingTriangles = new ArrayList<>();
-        List<MyPoint> front = new ArrayList<>(points);
-
-        while (front.size() > 1 && trianglesDrawn < maxTriangles)
-        {
-            MyLine edge = selectedEdge(front);
-            MyPoint pointC = findC(edge);
-            MyPoint neighborhoodPoint = findPointInNeighborhood(pointC, edge.calcDistance()/2, points);
-            System.out.println("[DRAW OBJECT] - CHOSEN C: " + pointC);
-            System.out.println("[DRAW OBJECT] - CHOSEN POINT FROM NEIGHBOURHOOD: " + neighborhoodPoint);
-            MyPoint finalPoint = (neighborhoodPoint != null) ? neighborhoodPoint : pointC;
-
-            if (!edge.start.equals(finalPoint) && !edge.end.equals(finalPoint))
-            {
-                MyTriangle triangle = new MyTriangle(edge.start, edge.end, finalPoint);
-                points.add(finalPoint);
-
-                boolean intersectsExisting = false;
-                for (MyTriangle existing : existingTriangles)
-                {
-                    if (triangle.intersects(existing))
-                    {
-                        intersectsExisting = true;
-                        break;
-                    }
-                }
-
-                if (!intersectsExisting)
-                {
-                    Line line0 = new Line(edge.start.getX(), edge.start.getY(), edge.end.getX(), edge.end.getY());
-                    Line line1 = new Line(edge.start.getX(), edge.start.getY(), finalPoint.getX(), finalPoint.getY());
-                    Line line2 = new Line(edge.end.getX(), edge.end.getY(), finalPoint.getX(), finalPoint.getY());
-
-                    if (trianglesDrawn == maxTriangles - 1)
-                    {
-                        line0.setStroke(Color.RED);
-                        line1.setStroke(Color.RED);
-                        line2.setStroke(Color.RED);
-                    }
-
-                    root.getChildren().addAll(line0, line1, line2);
-
-                    existingTriangles.add(triangle);
-                    updateFront(front, edge, triangle);
-
-                    trianglesDrawn++;
-                    if (trianglesDrawn >= maxTriangles)
-                    {
-                        break;
-                    }
-                }
-
-                front.remove(edge.start);
-            }
-        }
-
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Do you want to save mesh to a file? 1 - yes, 0 - no");
-        int save = scanner.nextInt();
-        if (save == 1)
-        {
-            saveData(existingTriangles, "mesh.txt");
+            finalPoint = rowStart;
         }
         else
         {
-            System.out.println("Data will not be saved.");
+            // Standardowy wybór kandydata dla trójkąta
+            List<MyPoint> candidatePoints = findC(edge);
+            for (MyPoint candidate : candidatePoints)
+            {
+                MyPoint neighborhoodPoint = findPointInNeighborhood(candidate, 0.75 * edge.calcDistance(), points);
+                MyPoint testPoint = (neighborhoodPoint != null) ? neighborhoodPoint : candidate;
+                if (!edge.start.equals(testPoint) && !edge.end.equals(testPoint))
+                {
+                    MyTriangle candidateTriangle = new MyTriangle(edge.start, edge.end, testPoint);
+                    boolean intersectsExisting = false;
+
+                    for (MyTriangle existing : existingTriangles)
+                    {
+                        if (candidateTriangle.intersects(existing))
+                        {
+                            intersectsExisting = true;
+                            break;
+                        }
+                    }
+
+                    if (!intersectsExisting)
+                    {
+                        finalPoint = testPoint;
+                        break;
+                    }
+                }
+            }
         }
-        scanner.close();
+
+        // Jeśli udało się wybrać finalPoint, tworzymy trójkąt
+        if (finalPoint != null)
+        {
+            MyTriangle triangle = new MyTriangle(edge.start, edge.end, finalPoint);
+            existingTriangles.add(triangle);
+            trianglesToAnimate.add(triangle);
+            updateFront(front, edge, triangle);
+            trianglesDrawn++;
+        }
+
+        // Jeśli front uległ zmianie wskazującej, że dany rząd się zamknął, resetujemy rowStart
+        double epsilon = 1e-6;
+        if (front.size() > 1 && front.get(0).calcDistance(front.get(front.size() - 1)) < epsilon)
+        {
+            rowStart = null;
+        }
+
+
+        front.remove(edge.start);
     }
 
+    // Animacja
+    final int[] index = {0};
+    Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), event ->
+    {
+        if (index[0] < trianglesToAnimate.size())
+        {
+            MyTriangle triangle = trianglesToAnimate.get(index[0]);
+            Line line0 = new Line(triangle.w1.getX(), triangle.w1.getY(), triangle.w2.getX(), triangle.w2.getY());
+            Line line1 = new Line(triangle.w1.getX(), triangle.w1.getY(), triangle.w3.getX(), triangle.w3.getY());
+            Line line2 = new Line(triangle.w2.getX(), triangle.w2.getY(), triangle.w3.getX(), triangle.w3.getY());
+
+            // Jeśli to ostatni trójkąt - czerwony
+            if (index[0] == trianglesToAnimate.size() - 1)
+            {
+                line0.setStroke(Color.RED);
+                line1.setStroke(Color.RED);
+                line2.setStroke(Color.RED);
+            }
+            root.getChildren().addAll(line0, line1, line2);
+            index[0]++;
+        }
+    }));
+    timeline.setCycleCount(trianglesToAnimate.size());
+    timeline.play();
+
+    Scanner scanner = new Scanner(System.in);
+    System.out.println("Do you want to save mesh to a file? 1 - yes, 0 - no");
+    int save = scanner.nextInt();
+    if (save == 1) {
+        saveData(existingTriangles, "mesh.txt");
+    } else {
+        System.out.println("Data will not be saved.");
+    }
+    scanner.close();
+}
 
     // Odczytanie współrzędnych siatki wejściowej z pliku
     public List<MyPoint> readData(String filename, int pointsToRead) throws FileNotFoundException
